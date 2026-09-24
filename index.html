@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>나의 스트레스 유형은?</title>
+<style>
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:"Pretendard","Noto Sans KR",Arial,sans-serif;
+  color:#30344a;
+  background:linear-gradient(135deg,#eaf8ff,#fff4fb 48%,#fff9df);
+  overflow-x:hidden;
+}
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:20;
+  height:8px;background:#e9edf5;
+}
+.progress{
+  height:100%;width:0;
+  background:linear-gradient(90deg,#5aa8ee,#ef72a9);
+  transition:.25s;
+}
+.screen{
+  min-height:100svh;
+  height:100svh;
+  padding:38px 20px 24px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  scroll-snap-align:start;
+  scroll-snap-stop:always;
+}
+.container{width:min(720px,100%);margin:auto}
+.hero{
+  text-align:center;
+  background:rgba(255,255,255,.88);
+  border:3px solid white;
+  border-radius:34px;
+  padding:28px 22px;
+  box-shadow:0 15px 40px rgba(80,90,130,.12);
+}
+.bubble{
+  display:inline-block;
+  padding:7px 14px;border-radius:999px;
+  background:#fff2a8;color:#5960a8;font-weight:900;
+}
+h1{
+  font-size:clamp(30px,6vw,46px);
+  line-height:1.05;margin:17px 0 10px;
+}
+.pink{color:#f45f9d}.blue{color:#397fd5}
+.subtitle{color:#697386;line-height:1.7;font-size:14px}
+.scale{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:8px;margin:24px auto 0;max-width:460px;
+}
+.scale span{padding:10px 7px;border-radius:14px;font-size:13px;font-weight:800}
+.s1{background:#e8f3ff}.s2{background:#eaf9ee}.s3{background:#fff3ce}.s4{background:#ffe7f1}
+
+.qcard{
+  background:#fff;
+  border-radius:32px;
+  padding:25px 24px 22px;
+  box-shadow:0 15px 40px rgba(80,90,130,.12);
+  border:4px solid;
+}
+.qcard:nth-child(odd){border-color:#bfe5ff}
+.qcard:nth-child(even){border-color:#ffd0e3}
+.qtop{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.qnum{
+  width:44px;height:44px;border-radius:15px;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;background:#5e88dc;font-size:17px;font-weight:1000;
+}
+.qhint{font-size:12px;color:#9aa1b0;font-weight:700}
+.question{
+  font-size:clamp(20px,4vw,25px);
+  line-height:1.45;font-weight:900;
+  min-height:95px;display:flex;align-items:center;
+}
+.options{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:10px;
+}
+.options label{cursor:pointer}
+.options input{display:none}
+.options span{
+  display:flex;align-items:center;justify-content:center;
+  min-height:48px;padding:8px 6px;
+  border-radius:17px;background:#f5f6fa;
+  font-size:14px;font-weight:800;text-align:center;
+  border:2px solid transparent;transition:.15s;
+}
+.options input:checked + span{
+  background:#6579df;color:white;
+  border-color:#5266ca;transform:translateY(-2px);
+  box-shadow:0 5px 12px rgba(90,105,200,.18);
+}
+.next{
+  display:flex;justify-content:center;margin-top:14px;
+}
+.next button,.start button,.result button{
+  border:0;border-radius:999px;padding:11px 23px;
+  font-size:14px;font-weight:900;color:white;
+  background:linear-gradient(90deg,#5d8de8,#ef70a8);
+  box-shadow:0 8px 18px rgba(100,110,190,.2);
+  cursor:pointer;
+}
+.next button:disabled{opacity:.4;cursor:not-allowed}
+.resultbox{
+  background:#fff;border-radius:32px;padding:28px 22px;
+  text-align:center;box-shadow:0 15px 40px rgba(80,90,130,.12);
+}
+.result-icon{font-size:52px}
+.type{font-size:29px;font-weight:1000;margin:8px 0}
+.desc{max-width:580px;margin:12px auto 22px;line-height:1.7;color:#697386}
+.scores{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:20px auto;max-width:480px}
+.score{padding:15px;border-radius:15px;font-weight:900}
+.a{background:#e4f3ff}.b{background:#ffe7f1}.c{background:#e8faed}.d{background:#eee8ff}
+.target{
+  max-width:570px;margin:20px auto;padding:16px;
+  border-radius:23px;background:#fff8d9;
+  border:2px dashed #efc65b;line-height:1.7;
+}
+.target strong{font-size:17px}
+.scroll-guide{
+  margin-top:14px;font-size:13px;color:#8a91a3;font-weight:800;
+  animation:bounce 1.4s infinite;
+}
+@keyframes bounce{50%{transform:translateY(5px)}}
+body{scroll-snap-type:y mandatory}
+@media(max-width:500px){
+  .screen{padding:36px 14px 18px}
+  .qcard{padding:22px 17px 19px;border-radius:24px}
+  .question{min-height:100px;font-size:20px}
+  .options span{min-height:47px;font-size:13px}
+}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="progress" id="progress"></div></div>
+
+<section class="screen" id="intro">
+  <div class="container">
+    <div class="hero">
+      <div class="bubble">✨ 지금, 나의 마음은 어떨까?</div>
+      <h1>나의 <span class="pink">스트레스</span><br><span class="blue">유형은?</span></h1>
+      <div class="subtitle">
+        아래 문장을 읽고, <b>요즘 나에게 얼마나 해당하는지</b> 골라주세요.<br>
+        정답은 없어요! 편하게 솔직하게 답하면 돼요 😊
+      </div>
+      <div class="scale">
+        <span class="s1">① 전혀 아니다</span>
+        <span class="s2">② 별로 아니다</span>
+        <span class="s3">③ 조금 그렇다</span>
+        <span class="s4">④ 매우 그렇다</span>
+      </div>
+      <div class="scroll-guide">↓ 아래로 스크롤해서 시작해요</div>
+    </div>
+  </div>
+</section>
+
+<form id="quiz"></form>
+
+<section class="screen" id="result" style="display:none">
+  <div class="container">
+    <div class="resultbox">
+      <div class="result-icon" id="icon"></div>
+      <div>오늘의 나를 가장 많이 힘들게 하는 건?</div>
+      <div class="type" id="type"></div>
+      <div class="desc" id="desc"></div>
+      <div class="target">
+        <strong>🎯 이제 스트레스를 날려볼 시간!</strong><br>
+        아래 유형에 맞는 슈팅 타겟으로 이동해서<br>
+        스트레스를 시원하게 격파해보세요!
+      </div>
+      <div class="scores" id="scores"></div>
+      <button type="button" onclick="location.reload()">🔄 다시 해보기</button>
+    </div>
+  </div>
+</section>
+
+<script>
+const questions=[
+ {t:"생각이 너무 많아져서 머리가 복잡할 때가 있다.",k:"D"},
+ {t:"시험이나 성적이 잘 안 나올까 봐 불안하다.",k:"A"},
+ {t:"친구들과의 관계에서 괜히 신경 쓰일 때가 있다.",k:"B"},
+ {t:"다른 사람들과 비교하면서 나도 모르게 부담을 느낄 때가 있다.",k:"D"},
+ {t:"앞으로의 진로나 미래에 대해 걱정될 때가 있다.",k:"C"},
+ {t:"무언가를 할 때 '완벽하게 해야 한다'는 생각이 들 때가 있다.",k:"D"},
+ {t:"지금 하고 있는 공부나 과제가 너무 힘들게 느껴질 때가 있다.",k:"A"},
+ {t:"혼자 있는 시간이 필요하지만 외로움을 느낄 때도 있다.",k:"B"},
+ {t:"실수하거나 잘하지 못하면 스스로에게 실망할 때가 있다.",k:"D"},
+ {t:"친구나 가족 때문에 마음이 흔들릴 때가 있다.",k:"B"},
+ {t:"미래에 대한 불안 때문에 잠이 잘 오지 않을 때가 있다.",k:"C"},
+ {t:"새로운 상황이나 낯선 환경에서 긴장되고 불안할 때가 있다.",k:"C"}
+];
+
+const types={
+ A:{name:"학업형 📚",icon:"📚",desc:"공부, 시험, 과제처럼 학업과 관련된 일이 마음의 부담으로 다가오는 유형이에요."},
+ B:{name:"관계형 💗",icon:"🫶",desc:"친구나 주변 사람들과의 관계, 오해와 소외감처럼 사람 사이의 일이 마음을 힘들게 하는 유형이에요."},
+ C:{name:"미래형 🌈",icon:"🔮",desc:"진로, 진학, 미래에 대한 고민처럼 아직 오지 않은 일이 걱정으로 느껴지는 유형이에요."},
+ D:{name:"자기압박형 ✨",icon:"🌟",desc:"비교, 실수, 완벽하게 해야 한다는 마음처럼 스스로에게 주는 부담이 크게 느껴지는 유형이에요."}
+};
+
+const quiz=document.getElementById("quiz");
+
+questions.forEach((q,i)=>{
+ const section=document.createElement("section");
+ section.className="screen";
+ section.id="q"+i;
+ section.innerHTML=`
+  <div class="container">
+   <div class="qcard">
+    <div class="qtop">
+      <div class="qnum">${i+1}</div>
+      <div class="qhint">${i+1} / ${questions.length}</div>
+    </div>
+    <div class="question">${q.t}</div>
+    <div class="options">
+      ${[1,2,3,4].map(v=>`
+       <label>
+        <input type="radio" name="q${i}" value="${v}">
+        <span>${["전혀 아니다","별로 아니다","조금 그렇다","매우 그렇다"][v-1]}</span>
+       </label>`).join("")}
+    </div>
+
+   </div>
+  </div>`;
+ quiz.appendChild(section);
+
+ section.querySelectorAll("input").forEach(input=>{
+   input.addEventListener("change",()=>{
+     if(i===questions.length-1) showResult();
+     else document.getElementById("q"+(i+1)).scrollIntoView({behavior:"smooth"});
+   });
+ });
+});
+
+function showResult(){
+ const scores={A:0,B:0,C:0,D:0};
+ questions.forEach((q,i)=>{
+   scores[q.k]+=Number(document.querySelector(`input[name="q${i}"]:checked`).value);
+ });
+ const max=Math.max(...Object.values(scores));
+ const winner=Object.keys(scores).find(k=>scores[k]===max);
+ const t=types[winner];
+ document.getElementById("icon").textContent=t.icon;
+ document.getElementById("type").textContent=t.name;
+ document.getElementById("desc").textContent=t.desc;
+ document.getElementById("scores").innerHTML=`
+   <div class="score a">📚 학업형<br>${scores.A}점</div>
+   <div class="score b">💗 관계형<br>${scores.B}점</div>
+   <div class="score c">🌈 미래형<br>${scores.C}점</div>
+   <div class="score d">✨ 자기압박형<br>${scores.D}점</div>`;
+ document.getElementById("result").style.display="flex";
+ document.getElementById("result").scrollIntoView({behavior:"smooth"});
+}
+
+const observer=new IntersectionObserver(entries=>{
+ entries.forEach(entry=>{
+   if(entry.isIntersecting){
+     const id=entry.target.id;
+     let pct=0;
+     if(id==="intro") pct=0;
+     else if(id.startsWith("q")) pct=((Number(id.slice(1))+1)/questions.length)*100;
+     else if(id==="result") pct=100;
+     document.getElementById("progress").style.width=pct+"%";
+   }
+ });
+},{threshold:.55});
+
+document.querySelectorAll(".screen").forEach(s=>observer.observe(s));
+</script>
+</body>
+</html>
